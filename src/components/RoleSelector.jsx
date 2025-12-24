@@ -75,7 +75,6 @@ const RoleSelector = ({ selectedRole, onRoleChange }) => {
               <option 
                 key={role.value} 
                 value={role.value}
-                disabled={isLocked}
               >
                 {role.label} - {role.description}
                 {isLocked && ' 🔒 (You don\'t have access)'}

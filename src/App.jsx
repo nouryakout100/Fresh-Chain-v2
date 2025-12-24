@@ -54,19 +54,15 @@ const AppContent = () => {
         authorized = await hasRole(account, selectedRole);
       }
 
-      setRoleAuthorized(authorized);
-
-      if (!authorized) {
-        addNotification(
-          `You are not registered as a ${selectedRole}. Please contact admin to register your address.`,
-          'error'
-        );
-        setSelectedRole('');
-        setAuthenticated(false);
-      }
+      // For demonstration: Allow viewing interface even if not registered
+      // Set to true to allow interface access, but actual operations will still check on-chain
+      setRoleAuthorized(true);
+      
+      // Don't show error or block access - allow viewing for demonstration
     } catch (error) {
       console.error('Error checking role authorization:', error);
-      setRoleAuthorized(false);
+      // Still allow access for demonstration
+      setRoleAuthorized(true);
     }
   };
 
@@ -93,7 +89,8 @@ const AppContent = () => {
       return;
     }
 
-    // Check if user has the role
+    // For demonstration: Allow access to all roles to view interfaces
+    // Check if user has the role, but allow access anyway
     try {
       let hasAccess = false;
       
@@ -103,20 +100,18 @@ const AppContent = () => {
         hasAccess = await hasRole(account, role);
       }
 
-      if (hasAccess) {
-        // User has the role, show login form
-        setPendingRole(role);
-        setShowLogin(true);
-      } else {
-        // User doesn't have the role
-        addNotification(
-          `You are not registered as a ${role}. Please contact admin to register your address.`,
-          'error'
-        );
-      }
+      // For demonstration: Always show login form but allow access
+      // Show login form regardless of registration status
+      setPendingRole(role);
+      setShowLogin(true);
+      
+      // Note: Actual blockchain operations will still fail if not registered
+      // But the interface will be visible after login for demonstration
     } catch (error) {
       console.error('Error checking role:', error);
-      addNotification('Failed to check role registration. Please try again.', 'error');
+      // Still allow access for demonstration - show login form
+      setPendingRole(role);
+      setShowLogin(true);
     }
   };
 
@@ -163,23 +158,23 @@ const AppContent = () => {
           />
         )}
 
-        {account && selectedRole === 'admin' && authenticated && roleAuthorized && (
+        {account && selectedRole === 'admin' && authenticated && (
           <Admin />
         )}
 
-        {account && selectedRole === 'producer' && authenticated && roleAuthorized && (
+        {account && selectedRole === 'producer' && authenticated && (
           <Producer />
         )}
 
-        {account && selectedRole === 'transporter' && authenticated && roleAuthorized && (
+        {account && selectedRole === 'transporter' && authenticated && (
           <Transporter />
         )}
 
-        {account && selectedRole === 'distributor' && authenticated && roleAuthorized && (
+        {account && selectedRole === 'distributor' && authenticated && (
           <Distributor />
         )}
 
-        {account && selectedRole === 'retailer' && authenticated && roleAuthorized && (
+        {account && selectedRole === 'retailer' && authenticated && (
           <Retailer />
         )}
 
