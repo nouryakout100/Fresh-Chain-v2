@@ -1,6 +1,10 @@
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESS, ABI } from '../constants/contract';
 
+// Cache the working provider to avoid reconnecting on every call
+let cachedProvider = null;
+let providerPromise = null;
+
 /**
  * Gets a read-only contract instance (no wallet interaction required)
  * Uses MetaMask if available, otherwise uses public RPC for read-only access
@@ -12,31 +16,56 @@ export const getReadOnlyContract = async () => {
   if (window.ethereum) {
     provider = new ethers.BrowserProvider(window.ethereum);
   } else {
-    // Use public RPC provider for read-only access (no wallet needed)
-    // Sepolia testnet public RPC endpoints
-    const publicRpcUrls = [
-      'https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161', // Infura public endpoint
-      'https://rpc.sepolia.org', // Sepolia public RPC
-      'https://ethereum-sepolia-rpc.publicnode.com', // PublicNode
-    ];
-    
-    // Try to connect to a public RPC provider
-    let connected = false;
-    for (const rpcUrl of publicRpcUrls) {
-      try {
-        provider = new ethers.JsonRpcProvider(rpcUrl);
-        // Test connection by getting block number
-        await provider.getBlockNumber();
-        connected = true;
-        break;
-      } catch (error) {
-        console.warn(`Failed to connect to ${rpcUrl}, trying next...`);
-        continue;
-      }
-    }
-    
-    if (!connected) {
-      throw new Error("Unable to connect to blockchain. Please install MetaMask or check your internet connection.");
+    // Use cached provider if available
+    if (cachedProvider) {
+      provider = cachedProvider;
+    } else if (providerPromise) {
+      // If a connection attempt is in progress, wait for it
+      provider = await providerPromise;
+    } else {
+      // Use public RPC provider for read-only access (no wallet needed)
+      // Sepolia testnet public RPC endpoints (ordered by reliability)
+      const publicRpcUrls = [
+        'https://ethereum-sepolia-rpc.publicnode.com', // PublicNode (most reliable, no auth)
+        'https://rpc2.sepolia.org', // Alternative Sepolia RPC
+        'https://sepolia.gateway.tenderly.co', // Tenderly public RPC
+        'https://rpc.sepolia.org', // Sepolia Foundation (often slow)
+      ];
+      
+      // Try to connect to a public RPC provider
+      providerPromise = (async () => {
+        let connected = false;
+        let lastError = null;
+        
+        for (const rpcUrl of publicRpcUrls) {
+          try {
+            const testProvider = new ethers.JsonRpcProvider(rpcUrl);
+            // Test connection with shorter timeout (3 seconds)
+            await Promise.race([
+              testProvider.getBlockNumber(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+            ]);
+            cachedProvider = testProvider;
+            connected = true;
+            console.log(`✅ Connected to public RPC: ${rpcUrl}`);
+            break;
+          } catch (error) {
+            // Silently try next endpoint (only log if all fail)
+            lastError = error;
+            continue;
+          }
+        }
+        
+        if (!connected) {
+          const errorMessage = lastError?.message || 'Unknown error';
+          throw new Error(`Unable to connect to blockchain. Please install MetaMask or check your internet connection.`);
+        }
+        
+        return cachedProvider;
+      })();
+      
+      provider = await providerPromise;
+      providerPromise = null; // Clear promise after completion
     }
   }
 
