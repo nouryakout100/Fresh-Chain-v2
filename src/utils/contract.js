@@ -3,13 +3,43 @@ import { CONTRACT_ADDRESS, ABI } from '../constants/contract';
 
 /**
  * Gets a read-only contract instance (no wallet interaction required)
+ * Uses MetaMask if available, otherwise uses public RPC for read-only access
  */
 export const getReadOnlyContract = async () => {
-  if (!window.ethereum) {
-    throw new Error("MetaMask (or compatible provider) is required.");
+  let provider;
+  
+  // If MetaMask is available, use it
+  if (window.ethereum) {
+    provider = new ethers.BrowserProvider(window.ethereum);
+  } else {
+    // Use public RPC provider for read-only access (no wallet needed)
+    // Sepolia testnet public RPC endpoints
+    const publicRpcUrls = [
+      'https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161', // Infura public endpoint
+      'https://rpc.sepolia.org', // Sepolia public RPC
+      'https://ethereum-sepolia-rpc.publicnode.com', // PublicNode
+    ];
+    
+    // Try to connect to a public RPC provider
+    let connected = false;
+    for (const rpcUrl of publicRpcUrls) {
+      try {
+        provider = new ethers.JsonRpcProvider(rpcUrl);
+        // Test connection by getting block number
+        await provider.getBlockNumber();
+        connected = true;
+        break;
+      } catch (error) {
+        console.warn(`Failed to connect to ${rpcUrl}, trying next...`);
+        continue;
+      }
+    }
+    
+    if (!connected) {
+      throw new Error("Unable to connect to blockchain. Please install MetaMask or check your internet connection.");
+    }
   }
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
   const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
   return contract;
 };

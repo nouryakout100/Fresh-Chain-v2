@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import LoadingSpinner from './LoadingSpinner';
 import Dashboard from './Dashboard';
 import BatchList from './BatchList';
+import { QRCodeSVG } from 'qrcode.react';
 
 const Customer = () => {
   const { addNotification } = useApp();
@@ -64,11 +65,17 @@ const Customer = () => {
         console.error("Error looking up current owner role", innerErr);
       }
 
+      // Generate QR code URL for this batch
+      // Use the base path from vite config (for GitHub Pages deployment)
+      const basePath = import.meta.env.BASE_URL || '/';
+      const qrUrl = `${window.location.origin}${basePath}?batchId=${batchIdBigInt}`;
+
       setHistory({
         batch,
         sensors,
         owners,
         currentOwnerRole,
+        qrUrl,
       });
       
       addNotification('Batch history loaded successfully!', 'success');
@@ -127,8 +134,9 @@ const Customer = () => {
       <div className="card">
         <h3>👤 Customer Portal</h3>
         <div className="note">
-          Customers can verify the full history of a product batch. No blockchain transaction is required.
+          Customers can verify the full history of a product batch. <strong>No MetaMask or wallet connection is required.</strong>
           You can view batch history by entering a Batch ID or by scanning a QR code (which will open this page with the batch ID).
+          Data is read directly from the blockchain using public RPC endpoints.
         </div>
 
         {/* Tabs */}
@@ -184,6 +192,21 @@ const Customer = () => {
 
             {history && (
               <div className="history-container">
+                {/* QR Code Section */}
+                {history.qrUrl && (
+                  <div className="qr-container">
+                    <div>
+                      <p style={{ marginBottom: '10px', fontWeight: 'bold', textAlign: 'center' }}>
+                        📱 Scan to View This Batch
+                      </p>
+                      <QRCodeSVG value={history.qrUrl} size={200} />
+                      <p style={{ marginTop: '10px', fontSize: '12px', color: '#666', textAlign: 'center' }}>
+                        Scan this QR code with your phone to view this batch history
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="history-section">
                   <h4>📦 Product Information</h4>
                   <ul className="history-list">

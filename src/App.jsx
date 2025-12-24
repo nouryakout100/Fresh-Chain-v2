@@ -67,7 +67,7 @@ const AppContent = () => {
   };
 
   const handleRoleChange = async (role) => {
-    // Customer doesn't need authentication or registration
+    // Customer doesn't need authentication, registration, or wallet connection
     if (role === 'customer') {
       setSelectedRole(role);
       setAuthenticated(true);
@@ -143,12 +143,10 @@ const AppContent = () => {
         
         <WalletConnect />
 
-        {account && (
-          <RoleSelector 
-            selectedRole={selectedRole}
-            onRoleChange={handleRoleChange}
-          />
-        )}
+        <RoleSelector 
+          selectedRole={selectedRole}
+          onRoleChange={handleRoleChange}
+        />
 
         {showLogin && pendingRole && (
           <LoginForm

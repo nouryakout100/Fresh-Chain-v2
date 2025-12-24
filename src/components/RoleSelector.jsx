@@ -38,7 +38,7 @@ const RoleSelector = ({ selectedRole, onRoleChange }) => {
     }
   };
 
-  const roles = [
+  const allRoles = [
     { value: 'admin', label: '👑 Admin', description: 'Register actors' },
     { value: 'producer', label: '🌱 Producer', description: 'Create batches' },
     { value: 'transporter', label: '🚚 Transporter', description: 'Log sensor data' },
@@ -47,9 +47,18 @@ const RoleSelector = ({ selectedRole, onRoleChange }) => {
     { value: 'customer', label: '👤 Customer', description: 'View history' },
   ];
 
+  // If no wallet connected, only show Customer option
+  const roles = account ? allRoles : allRoles.filter(role => role.value === 'customer');
+
   return (
     <div className="card">
       <h3>Select Your Role</h3>
+      {!account && (
+        <div className="note" style={{ marginBottom: '15px' }}>
+          💡 Connect your MetaMask wallet to access Admin, Producer, Transporter, Distributor, and Retailer roles.
+          Customer role is available without wallet connection.
+        </div>
+      )}
       <div className="input-group">
         <select 
           value={selectedRole} 
