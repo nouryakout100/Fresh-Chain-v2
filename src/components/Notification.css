@@ -1,0 +1,110 @@
+.notification {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-sm);
+  animation: slideIn 0.3s ease;
+  position: relative;
+  min-width: 300px;
+  max-width: 450px;
+  border: 1px solid;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-success {
+  background: white;
+  border-color: #a7f3d0;
+  color: #065f46;
+  border-left: 3px solid var(--success);
+}
+
+.notification-error {
+  background: white;
+  border-color: #fecaca;
+  color: #991b1b;
+  border-left: 3px solid var(--danger);
+}
+
+.notification-warning {
+  background: white;
+  border-color: #fde68a;
+  color: #92400e;
+  border-left: 3px solid var(--warning);
+}
+
+.notification-info {
+  background: white;
+  border-color: #bfdbfe;
+  color: #1e40af;
+  border-left: 3px solid #3b82f6;
+}
+
+.notification-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.notification-message {
+  flex: 1;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: var(--transition);
+  flex-shrink: 0;
+  border-radius: var(--radius);
+}
+
+.notification-close:hover {
+  opacity: 1;
+  background: var(--bg);
+}
+
+.notification-container {
+  position: fixed;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  z-index: 10000;
+  max-width: 450px;
+}
+
+@media (max-width: 768px) {
+  .notification-container {
+    left: var(--space-md);
+    right: var(--space-md);
+    max-width: none;
+  }
+  
+  .notification {
+    min-width: auto;
+    max-width: none;
+    padding: var(--space-md);
+  }
+}
